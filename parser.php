@@ -1,10 +1,19 @@
-<?php 
+<?php
+	//=============================[INPUT]=============================
+	$url = "https://jobs.tut.by/search/vacancy?text=php&area=16";
+	$keyword = "PHP";
+	//=================================================================
+	
+	//============================[SETTINGS]===========================
+	$settings = require_once("config.php");
 	require_once(__DIR__.DIRECTORY_SEPARATOR."libs/phpquery-master/phpQuery/phpQuery.php");
 
 	if (!is_callable('curl_init')) {
 		exit("There is no CURL module.");
 	}
-
+	//=================================================================
+	
+	//===========================[FUNCTIONS]===========================
 	function get_data($url) 
 	{
 		$ch = curl_init();
@@ -76,7 +85,7 @@
 		return $value;
 	};
 
-	function filter_result($array, $separator = "[:]") 
+	function filter_result($array, $separator) 
 	{
 		$result = array();
 		$array_keys = array_keys($array);
@@ -113,13 +122,14 @@
 
 		return $result;
 	}
-	
-	//$data = get_data("https://news.tut.by/world/");
-	$data = get_data("https://jobs.tut.by/search/vacancy?text=php&area=16");	
-	$links = get_links($data);
-	//$numbers_of_results = find_links($links, "world", "MODE_HREF", $callback);
-	$numbers_of_results = find_links($links, "PHP", "MODE_TEXT", $callback);
-	$result = filter_result($links);
+	//=================================================================
 
-	$output = "#$numbers_of_results#".implode("[@]", $result);
+	//============================[OUTPUT]=============================
+	$data = get_data($url);
+	$links = get_links($data);
+	$results_count = find_links($links, $keyword, $settings['mode'], $callback);
+	$result = filter_result($links, $settings['results_separator']);
+	
+	$output = str_pad($results_count, strlen($results_count) + 6, $settings['results_count_separator'], STR_PAD_BOTH).implode($settings['elements_separator'], $result);
 	//print_r($output);
+	//=================================================================
