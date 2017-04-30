@@ -87,38 +87,45 @@
 
 	function filter_result($array, $separator) 
 	{
-		$result = array();
-		$array_keys = array_keys($array);
-		$array_size = count($array_keys);
-		$array_largest = count($array[$array_keys[0]]);
-
-		for ($i=0; $i !== $array_size - 1; ++$i) {
-			if (count($array[$array_keys[$i + 1]]) > $array_largest) {
-				$array_largest = count($array[$array_keys[$i + 1]]);
-			}
-
-		}
-
-		for ($i=0; $i < $array_largest; ++$i) 
+		$arrays_number = count($array);
+		
+		if ($arrays_number >= 2) 
 		{
-			$check = 0;
-			$result_temp = "";
-			
-			
-			for ($j = 0; $j < $array_size; ++$j) 
-			{
-				if (isset($array[$array_keys[$j]][$i])) {
-					++$check;
-					$result_temp .= $array[$array_keys[$j]][$i].$separator;
-				} else continue 2;
+			$result = array();
+			$array = array_values($array);
 
-				if ($check === $array_size) {
+			$sort_ascending = function ($a, $b) {
+				$a = count($a);
+				$b = count($b);
+
+				if ($a == $b) {
+					return 0;
+				}
+				
+				return ($a < $b) ? -1 : 1;
+			};
+
+			uasort($array, $sort_ascending);
+			
+			foreach ($array[0] as $key => $value) {
+				$check = 0;
+				$result_temp = $value.$separator;
+
+				for ($i=1; $i <= $arrays_number - 1; ++$i) {
+					if (isset($array[$i][$key])) {
+						$result_temp .= $array[$i][$key];
+						++$check;
+					} else break;
+
+				}
+
+				if ($check == $arrays_number - 1) {
 					$result_temp = rtrim($result_temp, $separator);
 					$result[] = $result_temp;
 				}
 
-			}  
-		}		
+			}
+		} else return $array;
 
 		return $result;
 	}
@@ -129,7 +136,7 @@
 	$links = get_links($data);
 	$results_count = find_links($links, $keyword, $settings['mode'], $callback);
 	$result = filter_result($links, $settings['results_separator']);
-	
+
 	$output = str_pad($results_count, strlen($results_count) + 6, $settings['results_count_separator'], STR_PAD_BOTH).implode($settings['elements_separator'], $result);
 	//print_r($output);
 	//=================================================================
